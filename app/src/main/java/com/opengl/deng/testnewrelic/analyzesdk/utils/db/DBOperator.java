@@ -18,12 +18,12 @@ public class DBOperator {
 
     /** dbHelper类 */
     private DBHelper dbHelper;
-    public void initDb(Context context) {
+    private void initDb(Context context) {
         dbHelper = new DBHelper(context);
     }
 
     /** 单例模式 */
-    private static DBOperator instance = null;
+    private static DBOperator instance;
     private DBOperator(){}
     public static DBOperator getInstance(Context context) {
         if (instance == null) {

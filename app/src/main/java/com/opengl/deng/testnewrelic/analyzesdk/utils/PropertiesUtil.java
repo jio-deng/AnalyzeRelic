@@ -2,6 +2,7 @@ package com.opengl.deng.testnewrelic.analyzesdk.utils;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
 
@@ -44,6 +45,16 @@ public class PropertiesUtil {
      */
     public static String getPlatform() {
         return "Android";
+    }
+
+    /**
+     * 设置userId
+     * @param userId userId(tel:)
+     */
+    public static void setUserId(String userId) {
+        if (!TextUtils.isEmpty(userId)) {
+            PreferenceUtil.getInstance().writeToPreferences(USER_ID_ATTRIBUTE, userId);
+        }
     }
 
     /**
@@ -102,12 +113,17 @@ public class PropertiesUtil {
      * @param context app context
      */
     public static void setAppChannel(Context context) {
-        ApplicationInfo appInfo = context.getApplicationInfo();
-        String channel = appInfo.metaData.getString(KEY_APP_CHANNEL, "");
-        if (TextUtils.isEmpty(channel)) {
-            channel = "default";
+        try {
+            ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+            String channel = appInfo.metaData.getString(KEY_APP_CHANNEL, "");
+            if (TextUtils.isEmpty(channel)) {
+                channel = "default";
+            }
+            APP_CHANNEL = channel;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            APP_CHANNEL = "default";
         }
-        APP_CHANNEL = channel;
     }
 
     /**
