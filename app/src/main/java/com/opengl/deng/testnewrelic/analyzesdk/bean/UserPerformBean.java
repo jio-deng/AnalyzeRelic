@@ -42,4 +42,14 @@ public class UserPerformBean {
     public void setDuration(long duration) {
         this.duration = duration;
     }
+
+    @Override
+    public String toString() {
+        return "UserPerformBean{"
+                + "suiface : \"" + surface + "\","
+                + "startTime : " + startTime + ","
+                + "endTime : " + endTime + ","
+                + "duration : " + duration
+                + "}";
+    }
 }

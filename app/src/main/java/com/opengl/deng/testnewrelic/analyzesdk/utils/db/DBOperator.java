@@ -2,19 +2,32 @@ package com.opengl.deng.testnewrelic.analyzesdk.utils.db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
+import com.opengl.deng.testnewrelic.analyzesdk.AnalyzeRelic;
 import com.opengl.deng.testnewrelic.analyzesdk.bean.UserEventBean;
 import com.opengl.deng.testnewrelic.analyzesdk.bean.UserPerformBean;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 
 /**
  * @Description Operate database
  * Created by deng on 2018/6/20.
  */
 public class DBOperator {
+    private static int NUM_TO_UPDATE;
+    private static AtomicInteger numOfEvent = new AtomicInteger(0);
+    private static AtomicInteger numOfPerform = new AtomicInteger(0);
+    private static long ppreUpdateTime = 0;
+    private static long pcurrentUpdateTime = 0;
 
     /** dbHelper类 */
     private DBHelper dbHelper;
@@ -25,10 +38,18 @@ public class DBOperator {
     /** 单例模式 */
     private static DBOperator instance;
     private DBOperator(){}
-    public static DBOperator getInstance(Context context) {
+
+    public static DBOperator getInstance(Context context, int num) {
         if (instance == null) {
             instance = new DBOperator();
             instance.initDb(context);
+            NUM_TO_UPDATE = num;
+        }
+        return instance;
+    }
+    public static DBOperator getInstance() {
+        if (instance == null) {
+            throw new RuntimeException("class Sowing must be initialized first!");
         }
         return instance;
     }
@@ -81,6 +102,8 @@ public class DBOperator {
         values.put(DBHelper.DURATION, bean.getDuration());
         database.insert(DBHelper.TABLE_USER_PERFORM, null, values);
         database.close();
+        //判断当前插入数量是否需要上传
+        atomicPerformIncrease();
     }
 
     public void insertUserPerform(List<UserPerformBean> list) {
@@ -109,12 +132,73 @@ public class DBOperator {
         statement.bindLong(4, bean.getDuration());
     }
 
+    /** query from table */
+    public void queryTable(final String tableName) {
+        //保存时间
+        ppreUpdateTime = pcurrentUpdateTime;
+        pcurrentUpdateTime = System.currentTimeMillis();
+        final String current = String.valueOf(pcurrentUpdateTime);
+//        if (TextUtils.equals(tableName, DBHelper.TABLE_USER_EVENT)) {
+//            //TODO:user event
+//        } else {
+//
+//        }
+
+        Observable<List<UserPerformBean>> observable = Observable.create(new ObservableOnSubscribe<List<UserPerformBean>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<UserPerformBean>> e) throws Exception {
+                SQLiteDatabase database = dbHelper.getWritableDatabase();
+                Cursor cursor = database.query(false, tableName, null, DBHelper.END_TIME + "<?", new String[]{current}, null, null, null, null);
+                if (cursor.moveToFirst()) {
+                    List<UserPerformBean> list = new ArrayList<>();
+                    do {
+                        UserPerformBean bean = new UserPerformBean();
+                        bean.setSurface(cursor.getString(1));
+                        bean.setStartTime(cursor.getLong(2));
+                        bean.setEndTime(cursor.getLong(3));
+                        bean.setDuration(cursor.getLong(4));
+                        list.add(bean);
+                    } while (cursor.moveToNext());
+
+                    e.onNext(list);
+                    cursor.close();
+                    database.close();
+                    e.onComplete();
+                } else {
+                    e.onError(new Throwable("DBOperator: queryTable(Perform Data)->No data founded."));
+                }
+            }
+        });
+
+        AnalyzeRelic.getInstance().updatePerformData(ppreUpdateTime, pcurrentUpdateTime, observable);
+    }
+
     /** delete from table */
     public void deleteTable(String tableName) {
         SQLiteDatabase database = dbHelper.getWritableDatabase();
         String sql = "delete from " + tableName;
         database.execSQL(sql);
         database.close();
+    }
+
+    public void deleteTable(String tableName, long startTime, long endTime) {
+        SQLiteDatabase database = dbHelper.getWritableDatabase();
+        String sql = "delete from " + tableName
+                + " where " + DBHelper.END_TIME
+                + " < " + endTime
+                + " and " + DBHelper.END_TIME
+                + " > " + startTime;
+        database.execSQL(sql);
+        database.close();
+    }
+
+    /** User Perform : 统计自增+限数判断 */
+    private void atomicPerformIncrease() {
+        int num = numOfPerform.incrementAndGet();
+        if (num >= NUM_TO_UPDATE) {
+            //TODO:update -> read data; turn into json
+            queryTable(DBHelper.TABLE_USER_PERFORM);
+        }
     }
 
 }

@@ -9,6 +9,8 @@ import com.opengl.deng.testnewrelic.analyzesdk.utils.db.DBOperator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @Description cache for data before sow into database
@@ -20,8 +22,11 @@ public class UserCache {
     private static UserEventBean userEventBean = new UserEventBean();//TODO
     private static UserPerformBean userPerformBean = new UserPerformBean();
 
-    public UserCache(Context context) {
-        operator = DBOperator.getInstance(context);
+    private Lock lock;
+
+    public UserCache(Context context, int num) {
+        operator = DBOperator.getInstance(context, num);
+        lock = new ReentrantLock();
     }
 
     /**
@@ -58,13 +63,15 @@ public class UserCache {
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
 
-            synchronized (userPerformBean) {
-                userPerformBean.setSurface(key);
-                userPerformBean.setStartTime(startTime);
-                userPerformBean.setEndTime(endTime);
-                userPerformBean.setDuration(duration);
-                operator.insertUserPerform(userPerformBean);
-            }
+            lock.lock();
+
+            userPerformBean.setSurface(key);
+            userPerformBean.setStartTime(startTime);
+            userPerformBean.setEndTime(endTime);
+            userPerformBean.setDuration(duration);
+            operator.insertUserPerform(userPerformBean);
+
+            lock.unlock();
             return true;
         }
         return false;

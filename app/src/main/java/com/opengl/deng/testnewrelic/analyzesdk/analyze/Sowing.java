@@ -12,8 +12,8 @@ import android.content.Context;
 public class Sowing {
     private UserCache userCache;
 
-    public Sowing(Context context) {
-        userCache = new UserCache(context);
+    public Sowing(Context context, int num) {
+        userCache = new UserCache(context, num);
     }
 
     /**

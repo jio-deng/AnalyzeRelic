@@ -12,8 +12,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final int DB_VERSION = 1;
     private static final String DB_NAME = "analyzesdk";
-    protected static final String TABLE_USER_EVENT = "user_event";
-    protected static final String TABLE_USER_PERFORM = "user_perform";
+    public static final String TABLE_USER_EVENT = "user_event";
+    public static final String TABLE_USER_PERFORM = "user_perform";
 
     protected static final String CATEGORY = "category";
     protected static final String NAME = "name";
@@ -25,7 +25,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public DBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
-
     }
 
     @Override

@@ -5,10 +5,15 @@ import android.content.Context;
 import android.util.Log;
 
 import com.opengl.deng.testnewrelic.analyzesdk.analyze.Sowing;
+import com.opengl.deng.testnewrelic.analyzesdk.bean.UserPerformBean;
 import com.opengl.deng.testnewrelic.analyzesdk.callback.ActivityLifecycleListener;
 import com.opengl.deng.testnewrelic.analyzesdk.harvest.Harvest;
 import com.opengl.deng.testnewrelic.analyzesdk.utils.PreferenceUtil;
 import com.opengl.deng.testnewrelic.analyzesdk.utils.PropertiesUtil;
+
+import java.util.List;
+
+import io.reactivex.Observable;
 
 /**
  * @Description Android analyze entrance:
@@ -20,6 +25,7 @@ import com.opengl.deng.testnewrelic.analyzesdk.utils.PropertiesUtil;
  */
 public class AnalyzeRelic {
     private static final String TAG = "AnalyzeRelic";
+    private static int performNum = 5;
 
     private Context mContext;
     private Sowing mSowing;
@@ -34,6 +40,13 @@ public class AnalyzeRelic {
         }
         return instance;
     }
+
+    /** 设置用户行为上传条数 */
+    public void setMaxPerformToUpdate(int num) {
+        performNum = num;
+    }
+
+    //TODO:user event
 
     /** 设置app context */
     public void withApplication(Context context) {
@@ -54,15 +67,16 @@ public class AnalyzeRelic {
         PreferenceUtil.init(context);
         //set app channel
         PropertiesUtil.setAppChannel(context);
+        //init sowing
+        mSowing = new Sowing(context, performNum);
+        //init harvest
+        mHarvest = new Harvest(context);
         //set activity lifecycle listener
         if(context.getApplicationContext() instanceof Application) {
             Application application = (Application)context.getApplicationContext();
             ActivityLifecycleListener listener = new ActivityLifecycleListener();
             application.registerActivityLifecycleCallbacks(listener);
         }
-        //init sowing
-        mSowing = new Sowing(context);
-
     }
 
     /**
@@ -83,6 +97,14 @@ public class AnalyzeRelic {
         }
     }
 
-
+    /**
+     * 用户信息收集到一定数目时调用上传
+     * @param startTime 数据开始时间
+     * @param endTime 数据结束时间
+     * @param observable 查询数据observable
+     */
+    public void updatePerformData(long startTime, long endTime, Observable<List<UserPerformBean>> observable) {
+        mHarvest.updatePerformData(startTime, endTime, observable);
+    }
 
 }
