@@ -10,15 +10,6 @@ import android.text.TextUtils;
 public class PreferenceUtil {
     private static final String SP_NAME = "analyze_relic";
 
-    private static final String USER_ID_ATTRIBUTE = "userId";
-    private static final String APP_BUILD_ATTRIBUTE = "appBuild";
-    private static final String APP_NAME_ATTRIBUTE = "appName";
-    private static final String APPLICATION_PLATFORM_ATTRIBUTE = "platform";
-    private static final String APPLICATION_PLATFORM_VERSION_ATTRIBUTE = "platformVersion";
-    private static final String OS_NAME_ATTRIBUTE = "osName";
-    private static final String OS_VERSION_ATTRIBUTE = "osVersion";
-    private static final String DEVICE_ID_ATTRIBUTE = "deviceId";
-
     /** 单例模式初始化 */
     private SharedPreferences sp;
 

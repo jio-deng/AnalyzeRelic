@@ -25,10 +25,12 @@ import io.reactivex.Observable;
 public class Harvest {
     private static final String TAG = "Harvest";
 
-    private ServiceConnection connection;
+    private Context context;
     private SchedulerService service;
+    private ServiceConnection connection;
 
     public Harvest(Context context) {
+        this.context = context;
         context.startService(new Intent(context, SchedulerService.class));
         connection = new ServiceConnection() {
             @Override
@@ -52,8 +54,12 @@ public class Harvest {
      */
     public void updatePerformData(long startTime, long endTime, Observable<List<UserPerformBean>> observable) {
         if (service == null) {
-            Log.e(TAG, "updatePerformData: service is null !");
-            return;
+            Log.e(TAG, "updatePerformData: service is null! Start a new one!");
+            if (context != null) {
+                context.bindService(new Intent(context, SchedulerService.class), connection, Context.BIND_AUTO_CREATE);
+            } else {
+                Log.e(TAG, "updatePerformData: context is null!");
+            }
         }
 
         service.harvestPerformance(startTime, endTime, observable);

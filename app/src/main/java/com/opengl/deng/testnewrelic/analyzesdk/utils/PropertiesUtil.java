@@ -25,9 +25,12 @@ import java.util.Random;
  *
  * Created by deng on 2018/6/20.
  */
-public class PropertiesUtil {
+public class  PropertiesUtil {
 
     private static final String USER_ID_ATTRIBUTE = "userId";
+    private static final String USER_DEVICE_ID = "deviceId";
+    private static final String USER_SERIAL_ID = "serialId";
+    private static final String USER_LOCATION = "location";
     private static final String KEY_APP_CHANNEL = "relic_channel";
     private static String APP_CHANNEL;
 
@@ -35,7 +38,7 @@ public class PropertiesUtil {
      * 获取平台版本，如19（KITKAT），21等
      * @return platform version
      */
-    public static int getPlatformVersion() {
+    private static int getPlatformVersion() {
         return Build.VERSION.SDK_INT;
     }
 
@@ -43,7 +46,7 @@ public class PropertiesUtil {
      * 获取平台（Android）
      * @return platform
      */
-    public static String getPlatform() {
+    private static String getPlatform() {
         return "Android";
     }
 
@@ -61,7 +64,7 @@ public class PropertiesUtil {
      * 获取userId，用户唯一标识
      * @return userId
      */
-    public static String getUserId() {
+    private static String getUserId() {
         String userId = PreferenceUtil.getInstance().readStringPreference(USER_ID_ATTRIBUTE, "");
         if (TextUtils.isEmpty(userId)) {
             userId = getRandomUserId();
@@ -71,13 +74,33 @@ public class PropertiesUtil {
     }
 
     /**
+     * 获取deviceId，设备标识
+     * @return deviceId
+     */
+    private static String getDeviceId() {
+        return PreferenceUtil.getInstance().readStringPreference(USER_DEVICE_ID, "");
+    }
+
+    /**
+     * 获取serialId，sim卡序列号
+     * @return serialId
+     */
+    private static String getSerialId() {
+        return PreferenceUtil.getInstance().readStringPreference(USER_SERIAL_ID, "");
+    }
+
+    private static String getUserLocation() {
+        return PreferenceUtil.getInstance().readStringPreference(USER_LOCATION, "");
+    }
+
+    /**
      * 生成11位随机userId，供游客用户使用 : 6位日期 + 5位随机数
      * @return randomUserId
      */
     private static String getRandomUserId() {
         String dateFormat = "yyMMdd";
-        DateFormat sdf = SimpleDateFormat.getDateInstance();
-        String date = sdf.format(new Date(dateFormat));
+        DateFormat sdf = new SimpleDateFormat(dateFormat);
+        String date = sdf.format(new Date(System.currentTimeMillis()));
 
         Random random = new Random();
         int result = random.nextInt(90000) + 10000;
@@ -88,7 +111,7 @@ public class PropertiesUtil {
      * 获取项目包名
      * @return product name
      */
-    public static String getAppName() {
+    private static String getAppName() {
         return BuildConfig.APPLICATION_ID;
     }
 
@@ -96,7 +119,7 @@ public class PropertiesUtil {
      * 获取项目version
      * @return version
      */
-    public static String getAppVersion() {
+    private static String getAppVersion() {
         return BuildConfig.VERSION_NAME;
     }
 
@@ -104,7 +127,7 @@ public class PropertiesUtil {
      * 获取项目build
      * @return build
      */
-    public static int getAppBuild() {
+    private static int getAppBuild() {
         return BuildConfig.VERSION_CODE;
     }
 
@@ -130,7 +153,7 @@ public class PropertiesUtil {
      * 获取渠道
      * @return channel
      */
-    public static String getAppChannel() {
+    private static String getAppChannel() {
         return APP_CHANNEL;
     }
 
@@ -138,7 +161,7 @@ public class PropertiesUtil {
      * 获取手机类型
      * @return 手机类型
      */
-    public static String getOsName() {
+    private static String getOsName() {
         return Build.MODEL;
     }
 
@@ -146,8 +169,26 @@ public class PropertiesUtil {
      * 获取手机系统版本
      * @return 手机系统版本
      */
-    public static String getOsVersion() {
+    private static String getOsVersion() {
         return Build.VERSION.RELEASE;
     }
 
+    /**
+     * 获取当前用户信息
+     * @return json
+     */
+    public static String currentUserData() {
+        return "{" + "userId : " + getUserId() + ","
+                + "appBuild : " + getAppBuild() + ","
+                + "appVersion : " + getAppVersion() + ","
+                + "appName : " + getAppName() + ","
+                + "appChannel : " + getAppChannel() + ","
+                + "platform : " + getPlatform() + ","
+                + "platformVersion : " + getPlatformVersion() + ","
+                + "osName : " + getOsName() + ","
+                + "osVersion : " + getOsVersion() + ","
+                + "deviceId : " + getDeviceId() + ","
+                + "serialId : " + getSerialId() + ","
+                + "location : " + getUserLocation() + "}";
+    }
 }

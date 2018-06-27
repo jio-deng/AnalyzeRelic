@@ -196,8 +196,8 @@ public class DBOperator {
     private void atomicPerformIncrease() {
         int num = numOfPerform.incrementAndGet();
         if (num >= NUM_TO_UPDATE) {
-            //TODO:update -> read data; turn into json
             queryTable(DBHelper.TABLE_USER_PERFORM);
+            numOfPerform.set(0);
         }
     }
 
