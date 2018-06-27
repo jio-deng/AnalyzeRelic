@@ -67,7 +67,6 @@ public class ActivityLifecycleListener implements Application.ActivityLifecycleC
             if (PermissionUtil.getPermission(activity, 1, GET_PHONE_LOCATION)) {
                 LocationUtil.getInstance()
                         .getLocation(activity)
-                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Consumer<LocationBean>() {
                             @Override
                             public void accept(LocationBean locationBean) throws Exception {

@@ -6,6 +6,13 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
         android:name=".MyApplication"
@@ -26,9 +33,15 @@
 
         <service android:name=".analyzesdk.harvest.SchedulerService"/>
 
+        <service android:name="com.amap.api.location.APSService"/>
+
         <meta-data
             android:name="relic_channel"
-            android:value="icity"/>
+            android:value="analyze"/>
+
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="efd22418df49089b9fb36b9898c508da"/>
     </application>
 
 </manifest>

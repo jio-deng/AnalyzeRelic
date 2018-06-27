@@ -76,6 +76,7 @@ public class SchedulerService extends Service {
                 .doOnNext(new Consumer<List<UserPerformBean>>() {
                     @Override
                     public void accept(List<UserPerformBean> list) throws Exception {
+                        Log.d(TAG, "accept: ");
                         Log.d(TAG, "accept: harvestPerformance data -> " + list.toString());
                     }
                 })
@@ -84,6 +85,7 @@ public class SchedulerService extends Service {
                     @Override
                     public ObservableSource<String> apply(List<UserPerformBean> list) throws Exception {
                         if (list != null && list.size() != 0) {
+                            Log.d(TAG, "userData: " + PropertiesUtil.currentUserData());
                             return updateUserData.updateUserPerform(PropertiesUtil.currentUserData(), list.toString());
                         }
                         return null;

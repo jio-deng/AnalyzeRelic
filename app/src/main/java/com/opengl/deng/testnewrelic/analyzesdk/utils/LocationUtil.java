@@ -67,8 +67,10 @@ public class LocationUtil {
                     public void onLocationChanged(AMapLocation aMapLocation) {
                         Log.i(TAG, "onLocationChanged:" + aMapLocation.toString());
                         e.onNext(aMapLocation);
+                        e.onComplete();
                     }
                 });
+                mapLocationClient.startLocation();
             }
         }).map(new Function<AMapLocation, LocationBean>() {
             @Override
@@ -91,33 +93,34 @@ public class LocationUtil {
                     throw new Exception("定位失败，返回为null");
                 }
             }
-        }).onErrorResumeNext(new Function<Throwable, ObservableSource<? extends LocationBean>>() {
-            @Override
-            public ObservableSource<? extends LocationBean> apply(Throwable throwable) throws Exception {
-                return Observable.error(throwable);
-            }
-        }).retryWhen(new Function<Observable<Throwable>, ObservableSource<?>>() {
-            @Override
-            public ObservableSource<?> apply(Observable<Throwable> throwableObservable) throws Exception {
-                return throwableObservable.zipWith(Observable.range(1, 3), new BiFunction<Throwable, Integer, Throwable>() {
-                    @Override
-                    public Throwable apply(Throwable throwable, Integer integer) throws Exception {
-                        if (integer == 3) {
-                            return new RetryFailedException(throwable);
-                        }
-                        return throwable;
-                    }
-                }).flatMap(new Function<Throwable, ObservableSource<?>>() {
-                    @Override
-                    public ObservableSource<?> apply(Throwable throwable) throws Exception {
-                        if (throwable instanceof RetryFailedException) {
-                            return Observable.error(throwable.getCause());
-                        }
-                        return Observable.just(1);
-                    }
-                });
-            }
         });
+//        .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends LocationBean>>() {
+//            @Override
+//            public ObservableSource<? extends LocationBean> apply(Throwable throwable) throws Exception {
+//                return Observable.error(throwable);
+//            }
+//        }).retryWhen(new Function<Observable<Throwable>, ObservableSource<?>>() {
+//            @Override
+//            public ObservableSource<?> apply(Observable<Throwable> throwableObservable) throws Exception {
+//                return throwableObservable.zipWith(Observable.range(1, 3), new BiFunction<Throwable, Integer, Throwable>() {
+//                    @Override
+//                    public Throwable apply(Throwable throwable, Integer integer) throws Exception {
+//                        if (integer == 3) {
+//                            return new RetryFailedException(throwable);
+//                        }
+//                        return throwable;
+//                    }
+//                }).flatMap(new Function<Throwable, ObservableSource<?>>() {
+//                    @Override
+//                    public ObservableSource<?> apply(Throwable throwable) throws Exception {
+//                        if (throwable instanceof RetryFailedException) {
+//                            return Observable.error(throwable.getCause());
+//                        }
+//                        return Observable.just(1);
+//                    }
+//                });
+//            }
+//        });
     }
 
     class RetryFailedException extends Exception {
