@@ -15,9 +15,18 @@ public interface UpdateUserData {
      * 向服务器发送用户行为信息
      * @param basicData 用户基本信息
      * @param performData 用户行为信息
-     * @return Call
+     * @return callback string
      */
     @FormUrlEncoded
     @POST("analyze/userPerform")
     Observable<String> updateUserPerform(@Field("basicData") String basicData, @Field("performData") String performData);
+
+    /**
+     * 向服务器发送崩溃信息
+     * @param crashLog 崩溃信息
+     * @return callback string
+     */
+    @FormUrlEncoded
+    @POST("analyze/crashLog")
+    Observable<String> updateCrashLog(@Field("crashLog") String crashLog);
 }

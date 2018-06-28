@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import com.opengl.deng.testnewrelic.analyzesdk.bean.UserPerformBean;
+import com.opengl.deng.testnewrelic.analyzesdk.utils.FileUtil;
 import com.opengl.deng.testnewrelic.analyzesdk.utils.PropertiesUtil;
 import com.opengl.deng.testnewrelic.analyzesdk.utils.db.DBHelper;
 import com.opengl.deng.testnewrelic.analyzesdk.utils.db.DBOperator;
@@ -17,6 +18,7 @@ import com.opengl.deng.testnewrelic.analyzesdk.utils.net.UpdateUserData;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -28,6 +30,8 @@ import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.opengl.deng.testnewrelic.analyzesdk.callback.CrashHandler.FILE_NAME;
+
 /**
  * @Description service for updating : start + bind
  * Created by deng on 2018/6/23.
@@ -35,6 +39,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SchedulerService extends Service {
     private static final String TAG = "SchedulerService";
 
+    private static final String BASE_URL = "https://www.baidu.com/";
     private static final String IS_SUCCESS = "isSuccess";
     private static final String MSG = "msg";
 
@@ -46,7 +51,7 @@ public class SchedulerService extends Service {
         binder = new Binder();
         Gson gson = new GsonBuilder().setLenient().create();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://www.baidu.com/")
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
@@ -119,6 +124,25 @@ public class SchedulerService extends Service {
 //                }
 //            }
 //        }
+    }
+
+    /**
+     * 上传崩溃日志
+     * @param crashLog collected crash log
+     */
+    public void harvestCrashLog(String crashLog) {
+        Log.d(TAG, "harvestCrashLog: " + crashLog);
+        updateUserData.updateCrashLog(crashLog)
+                .retry(3)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<String>() {
+                    @Override
+                    public void accept(String s) throws Exception {
+                        Log.d(TAG, "accept: " + s);
+                        //delete file
+                        FileUtil.deleteFile(new File(FileUtil.getCrashPath() + FILE_NAME));
+                    }
+                });
     }
 
     /**

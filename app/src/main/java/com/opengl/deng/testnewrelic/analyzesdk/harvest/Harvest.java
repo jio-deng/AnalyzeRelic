@@ -65,4 +65,21 @@ public class Harvest {
         service.harvestPerformance(startTime, endTime, observable);
     }
 
+    /**
+     * 每次启动时，将上次的崩溃日志上传日志
+     * @param crashLog 崩溃日志
+     */
+    public void updateCrashLog(String crashLog) {
+        if (service == null) {
+            Log.e(TAG, "updateCrashLog: service is null! Start a new one!");
+            if (context != null) {
+                context.bindService(new Intent(context, SchedulerService.class), connection, Context.BIND_AUTO_CREATE);
+            } else {
+                Log.e(TAG, "updateCrashLog: context is null!");
+            }
+        }
+
+        service.harvestCrashLog(crashLog);
+    }
+
 }
